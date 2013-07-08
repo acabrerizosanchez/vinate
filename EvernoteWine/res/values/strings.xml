@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <string name="app_name">EvernoteWine</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
-
+    <string name="login_access">Access</string>
+    <string name="login_name_hint">Evernote User or email</string>
+    <string name="login_password_hint">Password</string>
+    <string name="title_activity_login">Login</string>
 </resources>
