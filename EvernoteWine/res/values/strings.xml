@@ -7,4 +7,7 @@
     <string name="login_name_hint">Evernote User or email</string>
     <string name="login_password_hint">Password</string>
     <string name="title_activity_login">Login</string>
+    <string name="login_error">Can\'t contact the evernote server</string>
+    <string name="login_message">Click to access your evernote account</string>
+    <string name="exit">Exit</string>
 </resources>

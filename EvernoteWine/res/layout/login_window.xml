@@ -17,15 +17,6 @@
         android:background="#FFFFFF"
         android:padding="10sp" >
 
-        <TextView
-            android:id="@+id/txtsignin"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:text="SIGN IN"
-            android:textColor="#000000"
-            android:textSize="25sp" />
-
         <Button
             android:id="@+id/btnSignIn"
             android:layout_width="fill_parent"
@@ -34,7 +25,7 @@
             android:layout_alignParentTop="true"
             android:paddingBottom="10sp"
             android:paddingTop="10sp"
-            android:text="Sign In" />
+            android:text="@string/login_access" />
 
     </RelativeLayout>
 
@@ -61,5 +52,15 @@
         android:layout_below="@+id/edtUserName"
         android:ems="10"
         android:inputType="textPassword" /> -->
+
+    <TextView
+        android:id="@+id/txtsignin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/RlayMain"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="79dp"
+        android:textColor="#000000"
+        android:textSize="25sp" />
 
 </RelativeLayout>
