@@ -1,18 +1,33 @@
 package com.example.evernotewine;
 
+import java.util.ArrayList;
+
 import android.os.Bundle;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.inputmethod.EditorInfo;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.evernote.client.android.EvernoteSession;
 import com.evernote.client.android.InvalidAuthenticationException;
+import com.evernote.client.android.OnClientCallback;
+import com.evernote.edam.notestore.NoteFilter;
+import com.evernote.edam.notestore.NoteMetadata;
+import com.evernote.edam.notestore.NotesMetadataList;
+import com.evernote.edam.notestore.NotesMetadataResultSpec;
+import com.evernote.edam.type.NoteSortOrder;
+import com.evernote.thrift.transport.TTransportException;
 
 public class MainActivity extends Activity {
 
@@ -23,12 +38,34 @@ public class MainActivity extends Activity {
     // Name of this application, for logging
     private static final String LOGTAG = "EWine";
     private static boolean loginFail = false;
-	
+    private EditText mSearchEditText;
+    private ArrayList<String> notesNames;
+    private ArrayAdapter<String> mAdapter;
+    private ListView mResultsListView;
+    protected final int DIALOG_PROGRESS = 101;
+    
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		mEvernoteSession = EvernoteSession.getInstance(this, CONSUMER_KEY, CONSUMER_SECRET, EVERNOTE_SERVICE);
+		//Add a listener to the search box
+		mSearchEditText = (EditText) this.findViewById(R.id.search_box);
+		mSearchEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+			@Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+				if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+					findNotesByQuery(mSearchEditText.getText().toString());
+                    return true;
+                }
+                return false;
+              }
+           });
+		
+		notesNames = new ArrayList();
+        mAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, notesNames);
+        mResultsListView = (ListView)findViewById(R.id.result_list);
+        mResultsListView.setAdapter(mAdapter);
 	}
 
 	
@@ -115,5 +152,59 @@ public class MainActivity extends Activity {
 	        break;
 	    }
 	  }
+	 
+	 
+	 
+	    public void findNotesByQuery(String query) {
+	        int offset = 0;
+	        int pageSize = 10;
+
+	        NoteFilter filter = new NoteFilter();
+	        filter.setOrder(NoteSortOrder.UPDATED.getValue());
+	        filter.setWords(query);
+	        NotesMetadataResultSpec spec = new NotesMetadataResultSpec();
+	        spec.setIncludeTitle(true);
+
+	        mAdapter.clear();
+
+	        showDialog(DIALOG_PROGRESS);
+	        try{
+	            mEvernoteSession.getClientFactory().createNoteStoreClient()
+	                    .findNotesMetadata(filter, offset, pageSize, spec, new OnClientCallback<NotesMetadataList>() {
+	                        @Override
+	                        public void onSuccess(NotesMetadataList data) {
+	                            Toast.makeText(getApplicationContext(), R.string.notes_searched, Toast.LENGTH_LONG).show();
+	                            removeDialog(DIALOG_PROGRESS);
+
+	                            for(NoteMetadata note : data.getNotes()) {
+	                                String title = note.getTitle();
+	                                notesNames.add(title);
+	                            }
+	                            mAdapter.notifyDataSetChanged();
+	                        }
+
+	                        @Override
+	                        public void onException(Exception exception) {
+	                            onError(exception, "Error listing notes. ", R.string.error_listing_notes);
+	                        }
+	                    });
+	        } catch (TTransportException exception){
+	            onError(exception, "Error creating notestore. ", R.string.error_creating_notestore);
+	        }
+	    }
+
+	    /**
+	     * Show log and toast and remove a dialog on Exceptions
+	     *
+	     */
+	    public void onError(Exception exception, String logstr, int id){
+	        Log.e(LOGTAG, logstr + exception);
+	        Toast.makeText(getApplicationContext(), id, Toast.LENGTH_LONG).show();
+	        removeDialog(DIALOG_PROGRESS);
+	    }
+	 
+	 
+	 
+	 
 
 }

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">EvernoteWine</string>
+    <string name="splash">splash</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
     <string name="login_access">Access</string>
@@ -10,4 +11,9 @@
     <string name="login_error">Can\'t contact the evernote server</string>
     <string name="login_message">Click to access your evernote account</string>
     <string name="exit">Exit</string>
+    <string name="main_activity">main</string>
+    <string name="search_hint">Search string</string>
+    <string name="notes_searched">Searching notes has finished</string>
+    <string name="error_listing_notes">Error listing note</string>
+    <string name="error_creating_notestore">Error creating notestore</string>
 </resources>
