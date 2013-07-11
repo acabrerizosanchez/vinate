@@ -15,8 +15,10 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 
 import com.evernote.client.android.EvernoteSession;
@@ -43,6 +45,8 @@ public class MainActivity extends Activity {
     private ArrayAdapter<String> mAdapter;
     private ListView mResultsListView;
     protected final int DIALOG_PROGRESS = 101;
+    private ImageButton btnSearch;
+    private ImageButton btnDel;
     
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +55,7 @@ public class MainActivity extends Activity {
 		mEvernoteSession = EvernoteSession.getInstance(this, CONSUMER_KEY, CONSUMER_SECRET, EVERNOTE_SERVICE);
 		//Add a listener to the search box
 		mSearchEditText = (EditText) this.findViewById(R.id.search_box);
-		mSearchEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+		mSearchEditText.setOnEditorActionListener(new OnEditorActionListener() {
 			@Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
 				if (actionId == EditorInfo.IME_ACTION_SEARCH) {
@@ -61,6 +65,25 @@ public class MainActivity extends Activity {
                 return false;
               }
            });
+		
+		btnSearch = (ImageButton) this.findViewById(R.id.search_button);
+		btnSearch.setOnClickListener(new OnClickListener(){
+			@Override
+			public void onClick(View arg0) {
+				findNotesByQuery(mSearchEditText.getText().toString());
+			}
+		});
+		
+		
+		btnDel = (ImageButton) this.findViewById(R.id.delete_button);
+		btnDel.setOnClickListener(new OnClickListener(){
+			@Override
+			public void onClick(View arg0) {
+				mSearchEditText.setText("");
+			}
+		});
+		
+		
 		
 		notesNames = new ArrayList();
         mAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, notesNames);
