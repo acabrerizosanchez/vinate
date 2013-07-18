@@ -1,6 +1,7 @@
 package com.example.evernotewine;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import android.os.Bundle;
 import android.app.Activity;
@@ -20,7 +21,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
+import android.widget.ViewSwitcher;
 
+import com.evernote.client.android.AsyncNoteStoreClient;
 import com.evernote.client.android.EvernoteSession;
 import com.evernote.client.android.InvalidAuthenticationException;
 import com.evernote.client.android.OnClientCallback;
@@ -44,6 +47,7 @@ public class MainActivity extends Activity {
     private ArrayList<String> notesNames;
     private ArrayAdapter<String> mAdapter;
     private ListView mResultsListView;
+    private ViewSwitcher viewSwitcher;
     protected final int DIALOG_PROGRESS = 101;
     private ImageButton btnSearch;
     private ImageButton btnDel;
@@ -80,15 +84,17 @@ public class MainActivity extends Activity {
 			@Override
 			public void onClick(View arg0) {
 				mSearchEditText.setText("");
+				findAllNotes();
 			}
 		});
-		
-		
-		
+	
 		notesNames = new ArrayList();
         mAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, notesNames);
         mResultsListView = (ListView)findViewById(R.id.result_list);
         mResultsListView.setAdapter(mAdapter);
+        viewSwitcher = (ViewSwitcher) findViewById(R.id.viewSwitcher1);
+	    viewSwitcher.setInAnimation( this , R.anim.fade_in );
+	    viewSwitcher.setOutAnimation( this , R.anim. fade_out );
 	}
 
 	
@@ -118,7 +124,12 @@ public class MainActivity extends Activity {
 			}
 			loginFail = false;
 			dialog.show();
-		}	
+		}
+		//Lets search  all the notes
+		else{
+			//viewSwitcher.reset();
+			findAllNotes();
+		}
 	}
 	
 	
@@ -178,32 +189,32 @@ public class MainActivity extends Activity {
 	 
 	 
 	 
-	    public void findNotesByQuery(String query) {
+	public void findNotesByQuery(String query) {
 	        int offset = 0;
 	        int pageSize = 10;
 
 	        NoteFilter filter = new NoteFilter();
 	        filter.setOrder(NoteSortOrder.UPDATED.getValue());
-	        filter.setWords(query);
+	        filter.setWords("tag:ewine "+query);
 	        NotesMetadataResultSpec spec = new NotesMetadataResultSpec();
 	        spec.setIncludeTitle(true);
 
 	        mAdapter.clear();
 
-	        showDialog(DIALOG_PROGRESS);
+	        //showDialog(DIALOG_PROGRESS);
 	        try{
 	            mEvernoteSession.getClientFactory().createNoteStoreClient()
 	                    .findNotesMetadata(filter, offset, pageSize, spec, new OnClientCallback<NotesMetadataList>() {
 	                        @Override
 	                        public void onSuccess(NotesMetadataList data) {
 	                            Toast.makeText(getApplicationContext(), R.string.notes_searched, Toast.LENGTH_LONG).show();
-	                            removeDialog(DIALOG_PROGRESS);
-
+	                            //removeDialog(DIALOG_PROGRESS);
 	                            for(NoteMetadata note : data.getNotes()) {
 	                                String title = note.getTitle();
 	                                notesNames.add(title);
 	                            }
 	                            mAdapter.notifyDataSetChanged();
+	                            viewSwitcher.showNext();
 	                        }
 
 	                        @Override
@@ -211,6 +222,8 @@ public class MainActivity extends Activity {
 	                            onError(exception, "Error listing notes. ", R.string.error_listing_notes);
 	                        }
 	                    });
+	            if(viewSwitcher.getCurrentView() != findViewById(R.id.progressBar1))
+					viewSwitcher.showNext(); 
 	        } catch (TTransportException exception){
 	            onError(exception, "Error creating notestore. ", R.string.error_creating_notestore);
 	        }
@@ -226,6 +239,44 @@ public class MainActivity extends Activity {
 	        removeDialog(DIALOG_PROGRESS);
 	    }
 	 
+	    
+	    
+	 public void findAllNotes(){
+		 int pageSize = 10;
+		 int offset = 0;
+		 NoteFilter filter = new NoteFilter();
+		 filter.setOrder(NoteSortOrder.UPDATED.getValue());
+	     filter.setWords("tag:ewine");
+		 NotesMetadataResultSpec spec = new NotesMetadataResultSpec();
+		 spec.setIncludeTitle(true);
+		 mAdapter.clear();
+         try {
+			mEvernoteSession.getClientFactory().createNoteStoreClient()
+			 .findNotesMetadata(filter, offset, pageSize, spec, new OnClientCallback<NotesMetadataList>() {
+			     @Override
+			     public void onSuccess(NotesMetadataList data) {
+			         Toast.makeText(getApplicationContext(), R.string.notes_searched, Toast.LENGTH_LONG).show();
+			         //removeDialog(DIALOG_PROGRESS);
+			         for(NoteMetadata note : data.getNotes()) {
+			             String title = note.getTitle();
+			             notesNames.add(title);
+			         }
+			         mAdapter.notifyDataSetChanged();
+			         viewSwitcher.showNext();
+			     }
+
+			     @Override
+			     public void onException(Exception exception) {
+			         onError(exception, "Error listing notes. ", R.string.error_listing_notes);
+			     }
+			 });
+			if(viewSwitcher.getCurrentView() != findViewById(R.id.progressBar1))
+				viewSwitcher.showNext(); 
+		} catch (TTransportException e) {
+			// TODO Auto-generated catch block
+			 onError(e, "Error creating notestore. ", R.string.error_creating_notestore);
+		}
+	 }
 	 
 	 
 	 
